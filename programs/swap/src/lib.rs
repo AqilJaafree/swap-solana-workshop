@@ -13,13 +13,21 @@ declare_id!("7aa35rvHUZ3BZfnkg9j51f8CMEMf9hC9etxiZiAdwD6E");
 
 #[program]
 pub mod swap {
-    use crate::instruction::MakeOffer;
 
     use super::*;
 
-    pub fn make_offer(ctx: Context<MakeOffer>) -> Result<()> 
+    pub fn make_offer(
+        context: Context<MakeOffer>,
+        id: u64,
+        token_a_offered_amount: u64,
+        token_b_wanted_amount: u64,
+    ) -> Result<()> 
     {
-        instructions::make_offer::send_offered_tokens_to_vault ()?;
-        instructions::make_offer::save_offer()    
+        instructions::make_offer::send_offered_tokens_to_vault (
+            &context, token_a_offered_amount
+        )?;
+        instructions::make_offer::save_offer(
+            context, id, token_b_wanted_amount
+        )    
     }
 }

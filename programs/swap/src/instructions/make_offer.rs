@@ -9,7 +9,7 @@ use crate::{Offer, ANCHOR_DISCRIMINATOR};
 use super::transfer_tokens;
 
 #[derive(Accounts)]
-#[instruction(id:u64)]
+#[instruction(id: u64)]
 pub struct MakeOffer<'info>  {
     #[account(mut)]
     pub maker: Signer <'info>,
@@ -24,15 +24,15 @@ pub struct MakeOffer<'info>  {
         mut,
         associated_token::mint = token_mint_a,
         associated_token::authority = maker,
-        associated_token::token_progam = token_program
+        associated_token::token_program = token_program
     )]
-    pub maker_token_account_a: Interface<'info, TokenAccount>,
+    pub maker_token_account_a: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         init,
         payer = maker,
         space = ANCHOR_DISCRIMINATOR + Offer::INIT_SPACE,
-        seed = [b"offer", maker.key().as_ref(), id.to_le_byte().as_ref()],
+        seeds = [b"offer", maker.key().as_ref(), id.to_le_bytes().as_ref()],
         bump
     )]
     pub offer: Account<'info, Offer>,
@@ -42,7 +42,7 @@ pub struct MakeOffer<'info>  {
         payer = maker,
         associated_token::mint = token_mint_a,
         associated_token::authority = offer,
-        associated_token::token_progam = token_program
+        associated_token::token_program = token_program
     )]
     pub vault: InterfaceAccount<'info, TokenAccount>,
 
@@ -53,28 +53,28 @@ pub struct MakeOffer<'info>  {
 }
 
 pub fn send_offered_tokens_to_vault(
-    ctx: &Ctx<MakeOffer>,
+    context: &Context<MakeOffer>,
     token_a_offered_amount: u64,
 ) -> Result <()> {
     transfer_tokens(
-        &ctx.accounts.maker_token_account_a,
-        &ctx.accounts.vault,
+        &context.accounts.maker_token_account_a,
+        &context.accounts.vault,
         &token_a_offered_amount,
-        &ctx.accounts.token_mint_a,
-        &ctx.accounts.maker,
-        &ctx.accounts.token_program,
+        &context.accounts.token_mint_a,
+        &context.accounts.maker,
+        &context.accounts.token_program,
     )
 } 
 
-pub fn save_offer (ctx: Ctx<MakeOffer>,id :u64, 
+pub fn save_offer (context: Context<MakeOffer>,id :u64, 
 token_b_wanted_amount: u64) -> Result <()> {
-    ctx.account.offer.set_inner(Offer{
+    context.accounts.offer.set_inner(Offer{
         id,
-        maker: ctx.accounts.maker.key(),
-        token_mint_a: ctx.accounts.token_mint_a.key(),
-        token_mint_b: ctx.accounts.token_mint_b.key(),
+        maker: context.accounts.maker.key(),
+        token_mint_a: context.accounts.token_mint_a.key(),
+        token_mint_b: context.accounts.token_mint_b.key(),
         token_b_wanted_amount,
-        bump: ctx.bumps.offer,  
+        bump: context.bumps.offer,  
     });
     Ok(())    
 }
